@@ -17,12 +17,14 @@ inline static void *parse_task_req_response(char *taskmsg, int request,
     size_t msg_length = nlmsg_obj->nlhdr.nlmsg_len - NLMSG_LEN;
     struct nlattr *nla = (struct nlattr *) (taskmsg + NLMSG_LEN);
 
+    void *nla_data = NULL;
+
     while (msg_length) {
 
         if (nla->nla_type == request) {
-            void *nla_data = malloc(nla_data_size);
+            nla_data = malloc(nla_data_size);
             memcpy(nla_data, NLA_DATA(nla), nla_data_size);
-            return nla_data;
+            break;
         }
 
         size_t nla_aligned_len = nla->nla_type == TASKSTATS_TYPE_AGGR_PID ?
@@ -31,7 +33,7 @@ inline static void *parse_task_req_response(char *taskmsg, int request,
         nla = (struct nlattr *) ((char *) nla + nla_aligned_len);
     }
 
-    return NULL;
+    return nla_data;
 }
 
 inline static void set_netlink_address(struct sockaddr_nl *nladdr)
@@ -78,7 +80,7 @@ inline static void build_task_req(struct nlmsg *nlmsg_obj, int nl_type, int cmd,
     nlmsg_obj->nlhdr.nlmsg_len += NLMSG_ALIGN(nlattr_obj->nla_len);
 }
 
-inline static void get_task_family_id(struct task *taskobj)
+inline static void build_task_family_id_req(struct task *taskobj)
 {
     struct nlmsg *nlmsg_obj = &(taskobj->nlmsg_obj);
 
@@ -97,8 +99,6 @@ inline static void create_conn(struct task *taskobj)
     if (bind(taskobj->nlconn_obj.conn_fd, (struct sockaddr *) 
              &(taskobj->nlconn_obj.nladdr), NL_ADDR_SIZE))
         TASK_ERROR("create-conn-bind");
-
-    get_task_family_id(taskobj);
 }
 
 struct taskstats *get_taskstats(struct task *taskobj, pid_t pid)
@@ -128,6 +128,7 @@ struct task *init_task(void)
     new_task->msg.msg_name = &(new_task->nlconn_obj.nladdr);
     new_task->msg.msg_namelen = NL_ADDR_SIZE;
 
+    build_task_family_id_req(new_task);
     new_task->vec.iov_base = &(new_task->nlmsg_obj);
     new_task->vec.iov_len = new_task->nlmsg_obj.nlhdr.nlmsg_len;
 
