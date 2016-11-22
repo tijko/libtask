@@ -1,4 +1,6 @@
 #ifndef LIBTASK
+#define LIBTASK
+
 
 #include <sys/uio.h>
 #include <sys/socket.h>
