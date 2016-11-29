@@ -105,12 +105,13 @@ int main(int argc, char *argv[])
     print_taskstats(taskstats_obj);
 
     /*
-     * The procfs file /proc/$PID/io has matching fields for i/o to some of the 
-     * fields for input output accounting in taskstats.  There can appear to be
-     * some discrepancies at first glance but they explained by a couple of
+     * The procfs file /proc/$PID/io has a couple of matching fields as the
+     * ones in taskstats for accounting statistics.  There can appear to be
+     * some discrepancies at first glance but they are explained by a couple of
      * factors:
      *
      * The "syscr" and "syscw" in taskstats are both rounded off by & ~(1024 - 1)
+     * which will round any number of calls below 1024 to 0.
      * 
      * The "rchar" and "wchar" in /proc/$PID/io are both affected by *any* 
      * read/write that the process caused.  Which includes any terminal i/o and 
