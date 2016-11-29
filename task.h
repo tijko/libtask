@@ -15,11 +15,6 @@
 #define NLA_DATA(msg) (void *) ((char *) msg + NLA_HDRLEN)
 #define NLA_LENGTH(len) NLA_HDRLEN + len
 
-struct nlconn {
-    struct sockaddr_nl nladdr;
-    int conn_fd;
-    int gnl_family_id;
-};
 
 struct nlmsg {
     struct nlmsghdr nlhdr;
@@ -31,7 +26,11 @@ struct nlmsg {
 #define NL_ADDR_SIZE sizeof(struct sockaddr_nl)
 
 struct task {
-    struct nlconn nlconn_obj;
+    struct {
+        struct sockaddr_nl nladdr;
+        int conn_fd;
+        int gnl_family_id;
+    } nlconn_obj;
     struct msghdr msg;
     struct iovec vec;
     struct nlmsg nlmsg_obj;
