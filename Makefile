@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -c -g -Wall -fPIC
-LDFLAGS = -shared
+LDFLAGS = -shared -Xlinker -soname=libtask.so
 
 HEADER = task.h
 
